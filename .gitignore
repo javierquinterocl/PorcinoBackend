@@ -1,0 +1,10 @@
+node_modules/
+.env
+*.log
+VALIDACIONES_REPRODUCTIVAS.md
+test-api.http
+codigo-ddl-aborto.sql
+codigo-ddl.sql
+API_DOCUMENTATION.md
+migrations/
+.env.example
