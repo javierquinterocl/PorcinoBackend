@@ -1,0 +1,13 @@
+node_modules/
+*.log
+.git/
+.env.local
+.env.development
+test-api.http
+VALIDACIONES_REPRODUCTIVAS.md
+API_DOCUMENTATION.md
+migrations/
+*.md
+!README.md
+!RAILWAY_DEPLOYMENT.md
+

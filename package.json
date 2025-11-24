@@ -3,9 +3,17 @@
   "version": "1.0.0",
   "description": "Backend para gestión de porcicultura",
   "main": "src/app.js",
+  "engines": {
+    "node": ">=18.x",
+    "npm": ">=9.x"
+  },
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "dev": "nodemon src/app.js",
+    "build": "echo 'No build step required'",
+    "postinstall": "echo 'Dependencies installed successfully'",
+    "verify": "node verify-setup.js",
+    "predeploy": "npm run verify"
   },
   "keywords": [
     "express",

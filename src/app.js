@@ -23,8 +23,33 @@ const { notificationJob } = require('./jobs/notificationJob');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Configuración de CORS para producción
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Permitir requests sin origin (como aplicaciones móviles o curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'https://granme-porcino.vercel.app',
+      process.env.FRONTEND_URL,
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://localhost:4200'
+    ].filter(Boolean); // Filtrar valores undefined
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido por CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
 // Middlewares
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' })); // Aumentar límite para imágenes base64
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 

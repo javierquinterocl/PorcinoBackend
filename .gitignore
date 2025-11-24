@@ -1,6 +1,18 @@
 node_modules/
 .env
+.env.production
 *.log
+
+# Archivos de documentación para Railway (no subir a git)
+RESUMEN_DESPLIEGUE.md
+RAILWAY_DEPLOYMENT.md
+CAMBIOS_RAILWAY.md
+CONFIGURACION_FRONTEND.md
+VARIABLES_ENTORNO_RAILWAY.txt
+verify-setup.js
+healthcheck.js
+
+# Archivos de desarrollo y configuración interna
 VALIDACIONES_REPRODUCTIVAS.md
 test-api.http
 codigo-ddl-aborto.sql

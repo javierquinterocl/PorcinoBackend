@@ -327,7 +327,71 @@ psql -U postgres -d porcime -f migrations/create_password_reset_tokens.sql
 ```bash
 npm start       # Iniciar en modo producción
 npm run dev     # Iniciar en modo desarrollo con nodemon
+npm run verify  # Verificar configuración para despliegue
 ```
+
+## 🚢 Despliegue en Railway
+
+### Variables de Entorno Requeridas
+
+```env
+# Base de datos (Supabase/PostgreSQL)
+DB_HOST=tu-host.supabase.com
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=tu_password
+DB_NAME=postgres
+DB_SSL=true
+
+# Servidor
+PORT=3000
+NODE_ENV=production
+
+# JWT (generar uno seguro en producción)
+JWT_SECRET=tu_clave_secreta_super_segura
+JWT_EXPIRES_IN=24h
+
+# Email
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=tu@email.com
+EMAIL_PASS=tu_app_password
+EMAIL_FROM="Tu Sistema <tu@email.com>"
+
+# Frontend
+FRONTEND_URL=https://tu-frontend.vercel.app
+```
+
+### Pasos Rápidos
+
+1. **Conecta tu repo en Railway**
+   - Ve a [railway.app](https://railway.app)
+   - New Project → Deploy from GitHub repo
+
+2. **Configura las variables de entorno**
+   - Agrega todas las variables arriba en el tab "Variables"
+   - Genera un JWT_SECRET seguro: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`
+
+3. **Despliega automáticamente**
+   - Railway detectará el `Procfile` y desplegará
+   - Obtén tu URL: `https://tu-proyecto.up.railway.app`
+
+4. **Conecta el frontend**
+   - En Vercel, agrega variable: `VITE_API_URL=https://tu-proyecto.up.railway.app`
+   - Redespliega tu frontend
+
+### Verificar antes de desplegar
+
+```bash
+npm run verify
+```
+
+Este proyecto incluye configuración optimizada para Railway:
+- ✅ SSL para Supabase
+- ✅ CORS configurado
+- ✅ Pool de conexiones optimizado
+- ✅ Healthcheck incluido
+- ✅ Jobs automáticos (celos, destete, notificaciones)
 
 ## 🐛 Solución de Problemas
 
