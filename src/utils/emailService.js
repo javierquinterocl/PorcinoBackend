@@ -69,6 +69,8 @@ class EmailService {
 
     try {
       console.log('📤 Enviando email con Resend...');
+      console.log('   De:', `Sistema Granme <${this.fromEmail}>`);
+      console.log('   Para:', to);
       
       const { data, error } = await this.resend.emails.send({
         from: `Sistema Granme <${this.fromEmail}>`,
@@ -78,8 +80,11 @@ class EmailService {
       });
 
       if (error) {
-        console.error('❌ Error de Resend:', error);
-        throw new Error(`Error al enviar email: ${error.message || JSON.stringify(error)}`);
+        console.error('❌ Error de Resend:', JSON.stringify(error, null, 2));
+        console.error('   Código de error:', error.statusCode || error.code);
+        console.error('   Mensaje:', error.message);
+        console.error('   Nombre:', error.name);
+        throw new Error(`Error de Resend: ${error.message || JSON.stringify(error)}`);
       }
 
       console.log('✅ Email de recuperación enviado exitosamente');
@@ -88,8 +93,10 @@ class EmailService {
       return data;
     } catch (error) {
       console.error('❌ Error al enviar email de recuperación:', error);
-      console.error('   Detalles:', error.message);
-      throw new Error('No se pudo enviar el email de recuperación. Intente nuevamente más tarde.');
+      console.error('   Tipo de error:', error.constructor.name);
+      console.error('   Detalles completos:', JSON.stringify(error, null, 2));
+      console.error('   Stack:', error.stack);
+      throw error; // Lanzar el error original para ver todos los detalles
     }
   }
 
@@ -206,6 +213,49 @@ class EmailService {
       </body>
       </html>
     `;
+  }
+
+  /**
+   * Enviar email genérico de notificación
+   * @param {string} to - Email del destinatario
+   * @param {string} subject - Asunto del email
+   * @param {string} html - Contenido HTML del email
+   */
+  async sendEmail(to, subject, html) {
+    if (!this.isAvailable()) {
+      console.warn('⚠️  Email no enviado: servicio Resend no configurado');
+      return null;
+    }
+
+    try {
+      console.log('📧 Enviando email...');
+      console.log('   De:', `Sistema Granme <${this.fromEmail}>`);
+      console.log('   Para:', to);
+      console.log('   Asunto:', subject);
+
+      const { data, error } = await this.resend.emails.send({
+        from: `Sistema Granme <${this.fromEmail}>`,
+        to: [to],
+        subject,
+        html
+      });
+
+      if (error) {
+        console.error('❌ Error de Resend al enviar email:', JSON.stringify(error, null, 2));
+        console.error('   Código:', error.statusCode || error.code);
+        console.error('   Mensaje:', error.message);
+        return null;
+      }
+
+      console.log('✅ Email enviado exitosamente');
+      console.log('   Email ID:', data.id);
+      return data;
+    } catch (error) {
+      console.error('❌ Error al enviar email:', error);
+      console.error('   Detalles:', JSON.stringify(error, null, 2));
+      // No lanzar error para no interrumpir el flujo
+      return null;
+    }
   }
 
   /**

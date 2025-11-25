@@ -15,6 +15,11 @@ PEGAR_EN_RAILWAY.txt
 verify-setup.js
 healthcheck.js
 INSTRUCCIONES_RESEND.md
+SOLUCION_DOMINIO_RESEND.md
+MIGRACION_NOTIFICACIONES_RESEND.md
+DIAGNOSTICO_EMAIL_ERROR.md
+ENV_EXAMPLE.txt
+test-resend.js
 
 # Archivos de desarrollo y configuración interna
 VALIDACIONES_REPRODUCTIVAS.md

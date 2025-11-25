@@ -13,7 +13,8 @@
     "build": "echo 'No build step required'",
     "postinstall": "echo 'Dependencies installed successfully'",
     "verify": "node verify-setup.js",
-    "predeploy": "npm run verify"
+    "predeploy": "npm run verify",
+    "test:email": "node test-resend.js"
   },
   "keywords": [
     "express",
