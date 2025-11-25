@@ -8,9 +8,13 @@ RESUMEN_DESPLIEGUE.md
 RAILWAY_DEPLOYMENT.md
 CAMBIOS_RAILWAY.md
 CONFIGURACION_FRONTEND.md
+COPIAR_EN_RAILWAY.md
 VARIABLES_ENTORNO_RAILWAY.txt
+railway-env.txt
+PEGAR_EN_RAILWAY.txt
 verify-setup.js
 healthcheck.js
+INSTRUCCIONES_RESEND.md
 
 # Archivos de desarrollo y configuración interna
 VALIDACIONES_REPRODUCTIVAS.md
