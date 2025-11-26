@@ -52,6 +52,36 @@ const sowController = {
     }
   },
 
+  // GET /api/sows/simplified - Obtener lista simplificada de cerdas (para selects)
+  getAllSimplified: async (req, res) => {
+    try {
+      const filters = {
+        status: req.query.status,
+        reproductive_status: req.query.reproductive_status
+      };
+
+      // Remover filtros undefined
+      Object.keys(filters).forEach(key => {
+        if (filters[key] === undefined) delete filters[key];
+      });
+
+      const sows = await sowModel.getAllSimplified(filters);
+      
+      res.json({
+        success: true,
+        count: sows.length,
+        data: sows
+      });
+    } catch (error) {
+      console.error('Error al obtener lista simplificada de cerdas:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error al obtener lista simplificada de cerdas',
+        error: error.message
+      });
+    }
+  },
+
   // GET /api/sows/:id - Obtener una cerda por ID
   getById: async (req, res) => {
     try {

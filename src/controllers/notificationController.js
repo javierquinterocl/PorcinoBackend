@@ -138,26 +138,25 @@ const notificationController = {
       // Enviar email al usuario si existe y tiene email
       try {
         const user = await userModel.findById(notificationData.user_id);
-        if (user && user.email && emailService.isAvailable()) {
+        if (user && user.email) {
           // Construir el contenido del email
           const subject = notification.title || 'Nueva notificación';
           const html = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 24px;">
-              <h2 style="color: #1a2e02;">Hola ${user.first_name || user.email},</h2>
-              <p style="font-size: 16px;">Tienes una nueva notificación en el sistema Granme:</p>
-              <table style="width:100%; margin: 16px 0; border-collapse: collapse;">
-                <tr><td style="font-weight:bold;">Título:</td><td>${notification.title}</td></tr>
-                <tr><td style="font-weight:bold;">Tipo:</td><td>${notification.type || 'General'}</td></tr>
-                <tr><td style="font-weight:bold;">Descripción:</td><td>${notification.message}</td></tr>
-              </table>
-              ${notification.action_url ? `<div style="margin: 24px 0; text-align: center;">
-                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}${notification.action_url}" style="background: #6b7c45; color: #fff; text-decoration: none; padding: 12px 32px; border-radius: 5px; font-weight: bold;">Ver más</a>
-              </div>` : ''}
-              <hr>
-              <small style="color: #888;">Este mensaje fue generado automáticamente por el sistema Granme.</small>
-            </div>
+            <h2>Hola ${user.first_name || user.email},</h2>
+            <p>Tienes una nueva notificación en el sistema:</p>
+            <p><strong>${notification.title}</strong></p>
+            <p>${notification.message}</p>
+            <p>Tipo: ${notification.type || 'General'}</p>
+            ${notification.action_url ? `<p><a href='${notification.action_url}'>Ver más</a></p>` : ''}
+            <hr>
+            <small>Este mensaje fue generado automáticamente por el sistema Granme.</small>
           `;
-          await emailService.sendEmail(user.email, subject, html);
+          await emailService.transporter?.sendMail({
+            from: `"Sistema Granme" <${emailService.fromEmail}>`,
+            to: user.email,
+            subject,
+            html
+          });
         }
       } catch (emailError) {
         console.error('Error al enviar email de notificación:', emailError);

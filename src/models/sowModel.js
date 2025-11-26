@@ -38,6 +38,43 @@ const sowModel = {
     return result.rows;
   },
 
+  // Obtener lista simplificada de cerdas (para selects/dropdowns)
+  getAllSimplified: async (filters = {}) => {
+    let query = `
+      SELECT 
+        id, 
+        ear_tag, 
+        alias, 
+        breed, 
+        reproductive_status,
+        status
+      FROM sows 
+      WHERE 1=1
+    `;
+    const params = [];
+    let paramCount = 1;
+
+    // Por defecto, solo mostrar cerdas activas
+    if (filters.status !== undefined) {
+      query += ` AND status = $${paramCount}`;
+      params.push(filters.status);
+      paramCount++;
+    } else {
+      query += ` AND status = 'activa'`;
+    }
+
+    if (filters.reproductive_status) {
+      query += ` AND reproductive_status = $${paramCount}`;
+      params.push(filters.reproductive_status);
+      paramCount++;
+    }
+
+    query += ' ORDER BY ear_tag ASC';
+
+    const result = await pool.query(query, params);
+    return result.rows;
+  },
+
   // Obtener una cerda por ID
   getById: async (id) => {
     const result = await pool.query('SELECT * FROM sows WHERE id = $1', [id]);

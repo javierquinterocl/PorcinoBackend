@@ -1,31 +1,28 @@
 node_modules/
 .env
-.env.production
 *.log
-
-# Archivos de documentación para Railway (no subir a git)
-RESUMEN_DESPLIEGUE.md
-RAILWAY_DEPLOYMENT.md
-CAMBIOS_RAILWAY.md
-CONFIGURACION_FRONTEND.md
-COPIAR_EN_RAILWAY.md
-VARIABLES_ENTORNO_RAILWAY.txt
-railway-env.txt
-PEGAR_EN_RAILWAY.txt
-verify-setup.js
-healthcheck.js
-INSTRUCCIONES_RESEND.md
-SOLUCION_DOMINIO_RESEND.md
-MIGRACION_NOTIFICACIONES_RESEND.md
-DIAGNOSTICO_EMAIL_ERROR.md
-ENV_EXAMPLE.txt
-test-resend.js
-
-# Archivos de desarrollo y configuración interna
-VALIDACIONES_REPRODUCTIVAS.md
 test-api.http
 codigo-ddl-aborto.sql
 codigo-ddl.sql
-API_DOCUMENTATION.md
 migrations/
 .env.example
+FrontendGranme/
+verify-setup.js
+
+
+# Ignorar archivos de documentación temporal
+CHANGELOG*.md
+CAMBIOS*.md
+RESUMEN*.md
+HORA*.md
+RAILWAY*.md
+CONFIGURACION*.md
+COPIAR*.md
+VALIDACIONES*.md
+*.txt
+!package.json
+!package-lock.json
+
+# Mantener solo estos archivos de documentación
+!README.md
+API_DOCUMENTATION.md

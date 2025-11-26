@@ -3,18 +3,9 @@
   "version": "1.0.0",
   "description": "Backend para gestión de porcicultura",
   "main": "src/app.js",
-  "engines": {
-    "node": ">=18.x",
-    "npm": ">=9.x"
-  },
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js",
-    "build": "echo 'No build step required'",
-    "postinstall": "echo 'Dependencies installed successfully'",
-    "verify": "node verify-setup.js",
-    "predeploy": "npm run verify",
-    "test:email": "node test-resend.js"
+    "dev": "nodemon src/app.js"
   },
   "keywords": [
     "express",
@@ -31,8 +22,8 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "node-cron": "^3.0.3",
-    "pg": "^8.11.3",
-    "resend": "^4.0.0"
+    "nodemailer": "^7.0.10",
+    "pg": "^8.11.3"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
