@@ -1,5 +1,7 @@
 const calendarEventModel = require('../models/calendarEventModel');
 const notificationModel = require('../models/notificationModel');
+const emailService = require('../utils/emailService');
+const userModel = require('../models/userModel');
 
 const calendarEventController = {
   // GET /api/calendar-events - Obtener todos los eventos
@@ -131,6 +133,40 @@ const calendarEventController = {
       };
 
       const newEvent = await calendarEventModel.create(eventData);
+
+      // Enviar email de notificación
+      try {
+        const user = await userModel.findById(req.user?.id);
+        if (user && user.email) {
+          const eventDate = new Date(newEvent.event_date).toLocaleDateString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          });
+          
+          let eventTime = '';
+          if (newEvent.event_date.includes('T')) {
+            const dateObj = new Date(newEvent.event_date);
+            eventTime = dateObj.toLocaleTimeString('es-ES', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
+            });
+          }
+
+          await emailService.sendEventNotificationEmail(user.email, {
+            title: newEvent.title,
+            eventDate: eventDate,
+            eventTime: eventTime,
+            createdBy: `${user.first_name} ${user.last_name}`,
+            sowName: newEvent.sow_ear_tag || newEvent.sow_alias || null
+          });
+        }
+      } catch (emailError) {
+        console.error('Error enviando email de evento:', emailError);
+        // No interrumpir el flujo si falla el email
+      }
 
       res.status(201).json({
         success: true,

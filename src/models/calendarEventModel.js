@@ -4,7 +4,15 @@ const calendarEventModel = {
   // Obtener todos los eventos
   getAll: async (filters = {}) => {
     try {
-      let query = 'SELECT * FROM calendar_events WHERE 1=1';
+      let query = `
+        SELECT 
+          ce.*,
+          s.ear_tag as sow_ear_tag,
+          s.alias as sow_alias
+        FROM calendar_events ce
+        LEFT JOIN sows s ON ce.sow_id = s.id
+        WHERE 1=1
+      `;
       const params = [];
       let paramCount = 1;
 
@@ -59,10 +67,15 @@ const calendarEventModel = {
     try {
       console.log(`📅 [calendarEventModel.getByMonth] Consultando año: ${year}, mes: ${month}`);
       const result = await pool.query(
-        `SELECT * FROM calendar_events 
-         WHERE EXTRACT(YEAR FROM event_date) = $1 
-         AND EXTRACT(MONTH FROM event_date) = $2
-         ORDER BY event_date ASC`,
+        `SELECT 
+          ce.*,
+          s.ear_tag as sow_ear_tag,
+          s.alias as sow_alias
+        FROM calendar_events ce
+        LEFT JOIN sows s ON ce.sow_id = s.id
+        WHERE EXTRACT(YEAR FROM event_date) = $1 
+        AND EXTRACT(MONTH FROM event_date) = $2
+        ORDER BY event_date ASC`,
         [year, month]
       );
       console.log(`📅 [calendarEventModel.getByMonth] Eventos encontrados: ${result.rows.length}`);

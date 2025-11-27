@@ -65,18 +65,24 @@ class EmailService {
       ? `${process.env.FRONTEND_URL}/reset-password/${token}`
       : `http://localhost:5173/reset-password/${token}`;
 
-    console.log('📧 Preparando email de recuperación con Resend...');
+    console.log('📧 Preparando email de recuperación...');
     console.log('   Para:', to);
     console.log('   URL:', resetUrl);
 
     try {
-      console.log('📤 Enviando email...');
-      const data = await this.resend.emails.send({
+      console.log('📤 Enviando email con Resend...');
+      
+      const { data, error } = await this.resend.emails.send({
         from: `Sistema Granme <${this.fromEmail}>`,
         to: [to],
         subject: 'Recuperación de Contraseña - Sistema Granme',
         html: this.getPasswordResetTemplate(userName, resetUrl)
       });
+
+      if (error) {
+        console.error('❌ Error de Resend:', error);
+        throw new Error(`Error al enviar email: ${error.message || JSON.stringify(error)}`);
+      }
       
       console.log('✅ Email de recuperación enviado exitosamente');
       console.log('   Email ID:', data.id);
@@ -85,9 +91,6 @@ class EmailService {
     } catch (error) {
       console.error('❌ Error al enviar email de recuperación:', error);
       console.error('   Detalles:', error.message);
-      if (error.statusCode) {
-        console.error('   Status Code:', error.statusCode);
-      }
       throw new Error('No se pudo enviar el email de recuperación. Intente nuevamente más tarde.');
     }
   }
@@ -208,18 +211,141 @@ class EmailService {
   }
 
   /**
+   * Enviar email de notificación de evento creado
+   * @param {string} to - Email del destinatario
+   * @param {Object} eventData - Datos del evento
+   */
+  async sendEventNotificationEmail(to, eventData) {
+    if (!this.isAvailable()) {
+      console.warn('Email de notificación de evento no enviado: servicio no configurado');
+      return;
+    }
+
+    const { title, eventDate, eventTime, createdBy, sowName } = eventData;
+    
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Nuevo Evento - Calendario</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+          }
+          .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+          }
+          .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #6b7c45;
+          }
+          .header h1 {
+            color: #1a2e02;
+            margin: 0;
+            font-size: 28px;
+          }
+          .content {
+            padding: 30px 0;
+          }
+          .event-details {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #6b7c45;
+          }
+          .event-details p {
+            margin: 10px 0;
+          }
+          .event-details strong {
+            color: #1a2e02;
+          }
+          .footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #666;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🐷 Sistema Granme</h1>
+          </div>
+          
+          <div class="content">
+            <h2>📅 Nuevo Evento Creado</h2>
+            <p>Se ha creado un nuevo evento en el calendario:</p>
+            
+            <div class="event-details">
+              <p><strong>📝 Evento:</strong> ${title}</p>
+              <p><strong>📅 Fecha:</strong> ${eventDate}</p>
+              ${eventTime ? `<p><strong>⏰ Hora:</strong> ${eventTime}</p>` : ''}
+              ${sowName ? `<p><strong>🐷 Cerda:</strong> ${sowName}</p>` : ''}
+              <p><strong>👤 Creado por:</strong> ${createdBy}</p>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p>Este es un mensaje automático del Sistema de Gestión Porcina Granme.</p>
+            <p>&copy; ${new Date().getFullYear()} Granme. Todos los derechos reservados.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    try {
+      const { data, error } = await this.resend.emails.send({
+        from: `Sistema Granme <${this.fromEmail}>`,
+        to: [to],
+        subject: `Nuevo Evento: ${title}`,
+        html: htmlContent
+      });
+
+      if (error) {
+        console.error('❌ Error al enviar email de evento:', error);
+        return;
+      }
+
+      console.log('✉️  Email de evento enviado:', data.id);
+      return data;
+    } catch (error) {
+      console.error('❌ Error al enviar email de evento:', error);
+    }
+  }
+
+  /**
    * Enviar email de confirmación de cambio de contraseña
    * @param {string} to - Email del destinatario
    * @param {string} userName - Nombre del usuario
    */
   async sendPasswordChangedEmail(to, userName) {
     if (!this.isAvailable()) {
-      // No lanzar error aquí, solo loggearlo
       console.warn('Email de confirmación no enviado: servicio no configurado');
       return;
     }
 
-    const htmlContent = `
+    try {
+      const { data, error } = await this.resend.emails.send({
+        from: `Sistema Granme <${this.fromEmail}>`,
+        to: [to],
+        subject: 'Contraseña Actualizada - Sistema Granme',
+        html: `
         <!DOCTYPE html>
         <html lang="es">
         <head>
@@ -291,15 +417,14 @@ class EmailService {
           </div>
         </body>
         </html>
-    `;
-
-    try {
-      const data = await this.resend.emails.send({
-        from: `Sistema Granme <${this.fromEmail}>`,
-        to: [to],
-        subject: 'Contraseña Actualizada - Sistema Granme',
-        html: htmlContent
+        `
       });
+
+      if (error) {
+        console.error('❌ Error al enviar email de confirmación:', error);
+        return;
+      }
+
       console.log('✉️  Email de confirmación enviado:', data.id);
       return data;
     } catch (error) {
