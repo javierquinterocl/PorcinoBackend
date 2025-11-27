@@ -91,16 +91,16 @@ const calendarEventModel = {
     try {
       const {
         title, event_date, event_type, description, notes,
-        status, reminder_days, created_by
+        status, reminder_days, created_by, sow_id
       } = eventData;
 
-      console.log('📅 [calendarEventModel.create] Creando evento:', { title, event_date, event_type });
+      console.log('📅 [calendarEventModel.create] Creando evento:', { title, event_date, event_type, sow_id });
 
       const result = await pool.query(
         `INSERT INTO calendar_events (
           title, event_date, event_type, description, notes,
-          status, reminder_days, created_by
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+          status, reminder_days, created_by, sow_id
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
         [
           title,
           event_date,
@@ -109,7 +109,8 @@ const calendarEventModel = {
           notes || null,
           status || 'pending',
           reminder_days || 0,
-          created_by || null
+          created_by || null,
+          sow_id || null
         ]
       );
       

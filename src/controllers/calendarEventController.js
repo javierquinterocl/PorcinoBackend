@@ -110,7 +110,7 @@ const calendarEventController = {
     try {
       const {
         title, event_date, event_type, description, notes,
-        status, reminder_days
+        status, reminder_days, sow_id
       } = req.body;
 
       // Validaciones
@@ -129,7 +129,8 @@ const calendarEventController = {
         notes,
         status: status || 'pending',
         reminder_days: reminder_days || 0,
-        created_by: req.user?.id
+        created_by: req.user?.id,
+        sow_id: sow_id || null
       };
 
       const newEvent = await calendarEventModel.create(eventData);
@@ -138,7 +139,8 @@ const calendarEventController = {
       try {
         const user = await userModel.findById(req.user?.id);
         if (user && user.email) {
-          const eventDate = new Date(newEvent.event_date).toLocaleDateString('es-ES', {
+          const dateObj = new Date(newEvent.event_date);
+          const eventDate = dateObj.toLocaleDateString('es-ES', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -146,8 +148,9 @@ const calendarEventController = {
           });
           
           let eventTime = '';
-          if (newEvent.event_date.includes('T')) {
-            const dateObj = new Date(newEvent.event_date);
+          // Si el campo event_date tiene hora (no es solo fecha)
+          const dateStr = newEvent.event_date.toString();
+          if (dateStr.includes('T') || dateObj.getHours() !== 0 || dateObj.getMinutes() !== 0) {
             eventTime = dateObj.toLocaleTimeString('es-ES', {
               hour: '2-digit',
               minute: '2-digit',
@@ -155,12 +158,24 @@ const calendarEventController = {
             });
           }
 
+          // Obtener nombre de cerda si existe sow_id
+          let sowName = null;
+          if (newEvent.sow_id) {
+            try {
+              const sowModel = require('../models/sowModel');
+              const sow = await sowModel.getById(newEvent.sow_id);
+              sowName = sow?.alias || sow?.ear_tag || null;
+            } catch (sowError) {
+              console.error('Error obteniendo cerda:', sowError);
+            }
+          }
+
           await emailService.sendEventNotificationEmail(user.email, {
             title: newEvent.title,
             eventDate: eventDate,
             eventTime: eventTime,
             createdBy: `${user.first_name} ${user.last_name}`,
-            sowName: newEvent.sow_ear_tag || newEvent.sow_alias || null
+            sowName: sowName
           });
         }
       } catch (emailError) {
