@@ -56,6 +56,16 @@ const sowController = {
   getById: async (req, res) => {
     try {
       const { id } = req.params;
+      
+      // Validar que el ID sea un número válido
+      if (isNaN(parseInt(id))) {
+        console.error(`❌ ID inválido recibido: "${id}" (esperaba un número)`);
+        return res.status(400).json({
+          success: false,
+          message: `ID inválido: "${id}". El ID debe ser un número.`
+        });
+      }
+      
       const sow = await sowModel.getById(id);
       
       if (!sow) {
