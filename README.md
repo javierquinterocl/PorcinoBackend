@@ -1,297 +1,368 @@
-# 🐷 Sistema de Gestión Porcina - Backend
+# 🐷 Porcime - Backend API
 
-Backend de la aplicación de gestión porcina con Node.js, Express y PostgreSQL.
+Backend para gestión integral de porcicultura desarrollado con Express.js, Node.js y PostgreSQL.
 
----
+## 📋 Características
 
-## 📋 Cambios Recientes - Eventos del Calendario
+- ✅ Autenticación JWT con roles (admin, técnico, usuario)
+- ✅ Recuperación de contraseña por email
+- ✅ CRUD completo de cerdas con validaciones
+- ✅ Gestión de usuarios con encriptación de contraseñas
+- ✅ Filtros avanzados para consultas
+- ✅ Estadísticas y reportes
+- ✅ Protección de rutas con middleware
+- ✅ Manejo de errores robusto
 
-### ✅ Funcionalidades Implementadas
+## 🛠️ Tecnologías
 
-#### 1. **Tracking de Usuarios**
-- Los eventos registran automáticamente quién los creó
-- Información del usuario (email y nombre) disponible en todas las consultas
-- Campo `created_by` y `updated_by` con foreign keys a la tabla users
+- **Node.js** - Runtime de JavaScript
+- **Express** - Framework web
+- **PostgreSQL** - Base de datos relacional
+- **JWT** - Autenticación basada en tokens
+- **Bcrypt** - Encriptación de contraseñas
+- **Nodemailer** - Envío de emails (recuperación de contraseña)
+- **dotenv** - Variables de entorno
+- **CORS** - Manejo de políticas de origen cruzado
 
-#### 2. **Asociación con Cerdas**
-- Eventos pueden asociarse con cerdas específicas
-- Endpoint `/api/sows/simplified` para obtener lista de cerdas
-- Información de la cerda incluida automáticamente en las respuestas
-- Frontend con select para elegir cerda
+## � Estructura del Proyecto
 
-#### 3. **Correos Mejorados**
-- Notificaciones por email incluyen toda la información del evento
-- Muestra: título, descripción, fecha, hora (Colombia), usuario creador, cerda asociada
-- Diseño profesional y responsive
-- Hora en zona horaria colombiana (America/Bogota, UTC-5)
-
----
+```
+backend/
+├── src/
+│   ├── config/
+│   │   └── db.js                 # Conexión a PostgreSQL
+│   ├── middleware/
+│   │   └── authMiddleware.js     # Autenticación JWT y roles
+│   ├── models/
+│   │   ├── userModel.js          # Modelo de usuarios
+│   │   └── sowModel.js           # Modelo de cerdas
+│   ├── controllers/
+│   │   ├── userController.js     # Lógica de usuarios
+│   │   └── sowController.js      # Lógica de cerdas
+│   ├── routes/
+│   │   ├── userRoutes.js         # Rutas de usuarios
+│   │   └── sowRoutes.js          # Rutas de cerdas
+│   └── app.js                    # Aplicación Express
+├── .env                          # Variables de entorno
+├── .gitignore
+├── database.sql                  # Script para crear BD
+├── API_DOCUMENTATION.md          # Documentación completa de API
+├── package.json
+└── README.md
+```
 
 ## 🚀 Instalación y Configuración
 
-### 1. Clonar el repositorio
-```bash
-git clone <url-del-repo>
-cd PorcinoBackend
-```
+### 1. Clonar o descargar el proyecto
 
 ### 2. Instalar dependencias
 ```bash
 npm install
 ```
 
-### 3. Configurar variables de entorno
-Crear archivo `.env` con:
+### 3. Configurar PostgreSQL
+
+Crear la base de datos ejecutando el script:
+```bash
+psql -U postgres
+```
+
+Luego ejecutar:
+```bash
+\i database.sql
+```
+
+O copiar el contenido de `database.sql` y ejecutarlo en tu cliente de PostgreSQL.
+
+### 4. Configurar variables de entorno
+
+Editar el archivo `.env` con tus credenciales:
+
 ```env
 # Base de datos
-DATABASE_URL=postgresql://usuario:contraseña@host:5432/nombre_bd
-PGHOST=host
-PGPORT=5432
-PGDATABASE=nombre_bd
-PGUSER=usuario
-PGPASSWORD=contraseña
-
-# JWT
-JWT_SECRET=tu_secreto_jwt_aqui
-
-# Email (opcional, para notificaciones)
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=tu_email@gmail.com
-EMAIL_PASS=tu_contraseña_de_aplicacion
-EMAIL_FROM=tu_email@gmail.com
-
-# Frontend
-FRONTEND_URL=http://localhost:5173
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=tu_password
+DB_NAME=porcime
 
 # Servidor
 PORT=3000
 NODE_ENV=development
+
+# JWT
+JWT_SECRET=tu_clave_secreta_muy_segura_cambiar_en_produccion
+JWT_EXPIRES_IN=7d
+
+# Email (Recuperación de contraseña)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=tu_correo@gmail.com
+EMAIL_PASS=tu_password_de_aplicacion
+EMAIL_FROM="Sistema Granme <tu_correo@gmail.com>"
+FRONTEND_URL=http://localhost:5173
 ```
 
-### 4. Aplicar migraciones
-```sql
--- Ejecutar en PostgreSQL:
--- 1. migrations/create_calendar_events_table.sql
--- 2. migrations/alter_calendar_events_user_tracking.sql
-```
+⚠️ **IMPORTANTE**: 
+- Cambiar `JWT_SECRET` en producción por una clave segura
+- Para Gmail, crear un "App Password" en: https://myaccount.google.com/apppasswords
+- Si no configuras EMAIL, la funcionalidad estará disponible pero mostrará el token en consola (modo desarrollo)
 
-### 5. Ejecutar el servidor
+Ver `.env.example` para más detalles de configuración.
+
+### 5. Iniciar el servidor
+
+**Modo desarrollo** (con auto-reinicio):
 ```bash
-# Desarrollo
 npm run dev
+```
 
-# Producción
+**Modo producción**:
+```bash
 npm start
 ```
 
----
+El servidor estará corriendo en: `http://localhost:3000`
 
-## 📁 Estructura del Proyecto
+## 📡 API Endpoints
 
+### Autenticación
+- `POST /api/auth/register` - Registrar usuario
+- `POST /api/auth/login` - Iniciar sesión
+- `GET /api/auth/me` - Obtener usuario actual (requiere token)
+- `POST /api/auth/forgot-password` - Solicitar recuperación de contraseña
+- `POST /api/auth/validate-reset-token` - Validar token de recuperación
+- `POST /api/auth/reset-password` - Resetear contraseña con token
+
+### Usuarios (Admin)
+- `GET /api/users` - Listar todos los usuarios
+- `GET /api/users/:id` - Obtener usuario por ID
+- `PUT /api/users/:id` - Actualizar usuario
+- `PUT /api/users/:id/password` - Cambiar contraseña
+- `DELETE /api/users/:id` - Desactivar usuario
+- `DELETE /api/users/:id/permanent` - Eliminar permanentemente
+
+### Cerdas
+- `GET /api/sows` - Listar todas las cerdas (con filtros)
+- `GET /api/sows/stats` - Obtener estadísticas
+- `GET /api/sows/:id` - Obtener cerda por ID
+- `GET /api/sows/ear-tag/:ear_tag` - Buscar por arete
+- `POST /api/sows` - Crear nueva cerda (admin/técnico)
+- `PUT /api/sows/:id` - Actualizar cerda completa (admin/técnico)
+- `PATCH /api/sows/:id` - Actualizar campos específicos (admin/técnico)
+- `DELETE /api/sows/:id` - Descartar cerda (admin/técnico)
+- `DELETE /api/sows/:id/permanent` - Eliminar permanentemente (admin)
+
+Ver documentación completa en: **[API_DOCUMENTATION.md](./API_DOCUMENTATION.md)**
+
+## 🔐 Autenticación
+
+Todas las rutas (excepto registro y login) requieren autenticación JWT.
+
+**Header requerido:**
 ```
-PorcinoBackend/
-├── src/
-│   ├── app.js              # Aplicación principal
-│   ├── config/
-│   │   └── db.js           # Configuración de PostgreSQL
-│   ├── controllers/        # Controladores de rutas
-│   ├── models/             # Modelos de datos
-│   ├── routes/             # Definición de rutas
-│   ├── middleware/         # Middleware (auth, upload)
-│   ├── jobs/               # Cron jobs (notificaciones)
-│   └── utils/              # Utilidades (email, validaciones)
-├── migrations/             # Scripts SQL de migración
-├── package.json
-└── README.md
-```
-
----
-
-## 🔧 Migraciones Importantes
-
-### Tracking de Usuarios en Eventos
-**Archivo:** `migrations/alter_calendar_events_user_tracking.sql`
-
-Convierte `created_by` y `updated_by` a foreign keys:
-```sql
--- Cambiar tipo a INTEGER
-ALTER TABLE calendar_events 
-  ALTER COLUMN created_by TYPE INTEGER USING created_by::INTEGER,
-  ALTER COLUMN updated_by TYPE INTEGER USING updated_by::INTEGER;
-
--- Agregar foreign keys
-ALTER TABLE calendar_events
-  ADD CONSTRAINT fk_calendar_events_created_by 
-  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL;
-
-ALTER TABLE calendar_events
-  ADD CONSTRAINT fk_calendar_events_updated_by 
-  FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL;
+Authorization: Bearer <tu_token_jwt>
 ```
 
-**⚠️ IMPORTANTE:** Si ya tienes datos, asegúrate que `created_by` y `updated_by` sean IDs numéricos o NULL.
+### Ejemplo de Login
+```javascript
+POST /api/auth/login
+Content-Type: application/json
 
----
-
-## 📊 Endpoints Nuevos
-
-### Cerdas Simplificadas
-```http
-GET /api/sows/simplified
-Authorization: Bearer <token>
-
-# Con filtros opcionales
-GET /api/sows/simplified?status=activa&reproductive_status=gestante
+{
+  "email": "admin@porcime.com",
+  "password": "admin123"
+}
 ```
 
 **Respuesta:**
 ```json
 {
   "success": true,
-  "count": 45,
-  "data": [
-    {
-      "id": 1,
-      "ear_tag": "A001",
-      "alias": "La Rubia",
-      "breed": "Yorkshire",
-      "reproductive_status": "gestante",
-      "status": "activa"
-    }
-  ]
-}
-```
-
-### Eventos del Calendario (mejorado)
-```http
-POST /api/calendar-events
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "title": "Vacunación cerda A001",
-  "event_date": "2025-12-01T14:30:00",
-  "event_type": "vaccination",
-  "description": "Vacunación contra parvovirosis",
-  "sow_id": 5
-}
-```
-
-**Respuesta (incluye info del usuario y cerda):**
-```json
-{
-  "success": true,
+  "message": "Inicio de sesión exitoso",
   "data": {
-    "id": 1,
-    "title": "Vacunación cerda A001",
-    "event_date": "2025-12-01T14:30:00",
-    "created_by": 3,
-    "created_by_email": "usuario@example.com",
-    "created_by_name": "Juan Pérez",
-    "sow_id": 5,
-    "sow_ear_tag": "A001",
-    "sow_alias": "La Rubia",
-    "sow_breed": "Yorkshire",
-    "sow_reproductive_status": "gestante"
+    "user": { ... },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
 }
 ```
 
----
+## � Roles y Permisos
 
-## 📧 Sistema de Notificaciones
+### Admin
+- Acceso completo a todas las funcionalidades
+- Gestión de usuarios
+- Eliminación permanente de registros
 
-### Cron Jobs Activos
-- **Notificaciones de eventos:** Cada hora (0 * * * *)
-- **Actualización estado de celos:** Diario a las 2 AM
-- **Actualización estado de destetes:** Diario a las 3 AM
+### Técnico
+- CRUD completo de cerdas
+- Consulta de estadísticas
+- No puede gestionar usuarios
 
-### Correos Automáticos
-Los correos incluyen:
-- 📅 Fecha del evento
-- 🕐 Hora del evento (zona horaria Colombia)
-- 📝 Descripción
-- 👤 Usuario que creó el evento
-- 🐷 Cerda asociada (si aplica)
+### Usuario
+- Solo lectura de cerdas
+- Consulta de estadísticas
+- No puede modificar datos
 
-**Zona horaria:** America/Bogota (UTC-5)
+## 📊 Modelo de Datos
 
----
-
-## 🔐 Autenticación
-
-Todas las rutas (excepto login y registro) requieren token JWT:
-```http
-Authorization: Bearer <tu_token_jwt>
+### Usuario
+```javascript
+{
+  id: UUID,
+  first_name: String,
+  last_name: String,
+  phone: String,
+  email: String (único),
+  password_hash: String,
+  role: 'admin' | 'tecnico' | 'usuario',
+  is_active: Boolean,
+  created_at: Timestamp,
+  updated_at: Timestamp
+}
 ```
 
----
+### Cerda (Sow)
+```javascript
+{
+  id: UUID,
+  ear_tag: String (único),
+  id_type: 'arete' | 'tatuaje' | 'rfid' | 'crotal',
+  alias: String,
+  breed: String,
+  genetic_line: String,
+  birth_date: Date,
+  entry_date: Date,
+  origin: String,
+  status: 'activa' | 'descartada' | 'muerta' | 'vendida',
+  location: String,
+  farm_name: String,
+  current_weight: Number,
+  body_condition: Number (1-5),
+  parity_count: Number,
+  total_piglets_born: Number,
+  total_piglets_alive: Number,
+  reproductive_status: String,
+  // ... más campos
+}
+```
 
-## 🐛 Troubleshooting
+## 🧪 Testing con Frontend (React)
 
-### Base de datos no conecta
+### Configuración de Axios
+```javascript
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'http://localhost:3000/api',
+});
+
+// Interceptor para añadir token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export default api;
+```
+
+### Ejemplo de uso
+```javascript
+// Login
+const login = async () => {
+  const { data } = await api.post('/auth/login', {
+    email: 'admin@porcime.com',
+    password: 'admin123'
+  });
+  localStorage.setItem('token', data.data.token);
+};
+
+// Obtener cerdas
+const getSows = async () => {
+  const { data } = await api.get('/sows?status=activa');
+  console.log(data.data);
+};
+
+// Crear cerda
+const createSow = async () => {
+  const { data } = await api.post('/sows', {
+    ear_tag: 'A001',
+    id_type: 'arete',
+    breed: 'Yorkshire',
+    birth_date: '2023-01-15',
+    entry_date: '2023-03-01',
+    farm_name: 'Granja Principal',
+    current_weight: 180.5,
+    body_condition: 3.5
+  });
+  return data.data;
+};
+```
+
+## 🗄️ Base de Datos
+
+### Crear tablas
 ```bash
-# Verificar variables de entorno
-echo $DATABASE_URL
-
-# Probar conexión
-node verify-setup.js
+psql -U postgres -d porcime -f database.sql
 ```
 
-### Correos no se envían
-1. Verifica que `EMAIL_HOST`, `EMAIL_USER`, `EMAIL_PASS` estén configurados
-2. Para Gmail, necesitas "Contraseña de aplicación" (no tu contraseña normal)
-3. Activa "Verificación en 2 pasos" en Gmail
-
-### Migración falla
-Si la migración de `created_by` falla:
-```sql
--- Limpiar datos no numéricos antes de migrar
-UPDATE calendar_events 
-SET created_by = NULL 
-WHERE created_by IS NOT NULL AND created_by !~ '^[0-9]+$';
+### Ejecutar migraciones
+```bash
+# Crear tabla de tokens de recuperación de contraseña
+psql -U postgres -d porcime -f migrations/create_password_reset_tokens.sql
 ```
 
+### Usuario por defecto
+- **Email**: admin@porcime.com
+- **Contraseña**: admin123
+- **Rol**: admin
+
+⚠️ **Cambiar contraseña después del primer login en producción**
+
+## 📝 Scripts NPM
+
+```bash
+npm start       # Iniciar en modo producción
+npm run dev     # Iniciar en modo desarrollo con nodemon
+```
+
+## 🐛 Solución de Problemas
+
+### Error de conexión a PostgreSQL
+- Verificar que PostgreSQL esté corriendo
+- Revisar credenciales en `.env`
+- Verificar que la base de datos `porcime` exista
+
+### Error "Token inválido"
+- Verificar que el token no haya expirado
+- Asegurarse de incluir "Bearer " antes del token
+- Verificar que `JWT_SECRET` sea el correcto
+
+### Error "Cerda con arete duplicado"
+- El `ear_tag` debe ser único
+- Verificar que no exista en la base de datos
+
+## 🔒 Seguridad
+
+- Contraseñas encriptadas con bcrypt (10 rounds)
+- Tokens JWT con expiración configurable
+- Tokens de recuperación de contraseña con expiración de 1 hora
+- Validación de roles en rutas protegidas
+- Validación de datos en base de datos con constraints
+- Variables de entorno para datos sensibles
+- Emails de notificación para cambios de contraseña
+
+## 📄 Licencia
+
+ISC
+
+## 👨‍💻 Autor
+
+Desarrollado para la gestión de porcicultura - Porcime
+
 ---
 
-## 📚 Documentación Completa
-
-Ver `API_DOCUMENTATION.md` para documentación detallada de todos los endpoints.
-
----
-
-## 🚀 Deploy en Railway
-
-1. Conecta tu repositorio a Railway
-2. Configura las variables de entorno
-3. Railway detectará automáticamente el `Procfile`
-4. Ejecuta las migraciones en la consola PostgreSQL de Railway
-
----
-
-## 📞 Soporte
-
-Para problemas o dudas, revisa:
-- Logs del servidor: `npm run dev`
-- Logs de Railway: Dashboard > Deployments > Logs
-- Consola del navegador para errores de frontend
-
----
-
-## ✨ Estado del Proyecto
-
-- ✅ CRUD de cerdas, verracos, lechones
-- ✅ Sistema de celos, servicios, gestaciones, partos
-- ✅ Calendario de eventos con tracking de usuarios
-- ✅ Asociación de eventos con animales
-- ✅ Notificaciones automáticas por email
-- ✅ Sistema de reportes y estadísticas
-- ✅ Autenticación JWT
-- ✅ Recuperación de contraseña
-
----
-
-## 📝 Licencia
-
-Proyecto privado - Todos los derechos reservados
+**Última actualización**: Noviembre 2025

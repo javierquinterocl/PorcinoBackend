@@ -108,7 +108,7 @@ const calendarEventController = {
     try {
       const {
         title, event_date, event_type, description, notes,
-        status, reminder_days, sow_id, boar_id, piglet_id
+        status, reminder_days
       } = req.body;
 
       // Validaciones
@@ -127,10 +127,7 @@ const calendarEventController = {
         notes,
         status: status || 'pending',
         reminder_days: reminder_days || 0,
-        created_by: req.user?.id,
-        sow_id: sow_id || null,
-        boar_id: boar_id || null,
-        piglet_id: piglet_id || null
+        created_by: req.user?.id
       };
 
       const newEvent = await calendarEventModel.create(eventData);
@@ -156,7 +153,7 @@ const calendarEventController = {
       const { id } = req.params;
       const {
         title, event_date, event_type, description, notes,
-        status, reminder_days, sow_id, boar_id, piglet_id
+        status, reminder_days
       } = req.body;
 
       // Verificar que el evento existe
@@ -184,10 +181,7 @@ const calendarEventController = {
         notes,
         status,
         reminder_days,
-        updated_by: req.user?.id,
-        sow_id: sow_id || null,
-        boar_id: boar_id || null,
-        piglet_id: piglet_id || null
+        updated_by: req.user?.id
       };
 
       const updatedEvent = await calendarEventModel.update(id, eventData);

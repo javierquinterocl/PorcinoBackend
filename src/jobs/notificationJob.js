@@ -20,21 +20,11 @@ const notificationJob = {
     try {
       console.log('📅 Generando notificaciones de calendario...');
 
-      // Obtener eventos próximos con información completa del creador y cerda asociada
+      // Obtener eventos próximos (dentro de las próximas 24 horas)
       const result = await pool.query(
-        `SELECT 
-          ce.*,
-          u.id as user_id,
-          u_created.email as created_by_email,
-          u_created.first_name || ' ' || u_created.last_name as created_by_name,
-          s.ear_tag as sow_ear_tag,
-          s.alias as sow_alias,
-          s.breed as sow_breed,
-          s.reproductive_status as sow_reproductive_status
+        `SELECT ce.*, u.id as user_id 
          FROM calendar_events ce
          CROSS JOIN users u
-         LEFT JOIN users u_created ON ce.created_by = u_created.id
-         LEFT JOIN sows s ON ce.sow_id = s.id
          WHERE ce.event_date BETWEEN NOW() AND NOW() + INTERVAL '24 hours'
            AND ce.event_date > NOW()
            AND u.is_active = TRUE
@@ -90,16 +80,8 @@ const notificationJob = {
           reference_type: 'calendar_event',
           reference_id: event.id,
           action_url: '/calendar',
-          // incluir información completa del evento en el objeto en memoria
-          event_date: event.event_date,
-          event_title: event.title,
-          event_description: event.description,
-          created_by_name: event.created_by_name,
-          created_by_email: event.created_by_email,
-          sow_ear_tag: event.sow_ear_tag,
-          sow_alias: event.sow_alias,
-          sow_breed: event.sow_breed,
-          sow_reproductive_status: event.sow_reproductive_status
+          // incluir la fecha del evento en el objeto en memoria
+          event_date: event.event_date
         });
       }
 
@@ -113,50 +95,40 @@ const notificationJob = {
           try {
             const user = await userModel.findById(notification.user_id);
             if (user && user.email) {
+              const subject = notification.title || 'Nueva notificación';
               // Obtener la fecha y hora del evento real desde el objeto original en memoria
               let eventDate = null;
               if (original && original.event_date) {
                 eventDate = new Date(original.event_date);
               }
-              
-              // Convertir a hora colombiana (America/Bogota, UTC-5)
-              const colombiaTimeZone = 'America/Bogota';
-              const formattedDate = eventDate.toLocaleDateString('es-CO', { 
-                timeZone: colombiaTimeZone,
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-              }).split('/').reverse().join('/'); // Formato YYYY/MM/DD
-              
-              const formattedTime = eventDate.toLocaleTimeString('es-CO', { 
-                timeZone: colombiaTimeZone,
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
+              const pad = n => n.toString().padStart(2, '0');
+              const formattedDate = `${eventDate.getFullYear()}/${pad(eventDate.getMonth()+1)}/${pad(eventDate.getDate())}`;
+              const formattedTime = `${pad(eventDate.getHours())}:${pad(eventDate.getMinutes())}`;
+
+              const html = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 24px;">
+                  <h2 style="color: #1a2e02;">Hola ${user.first_name || user.email},</h2>
+                  <p style="font-size: 16px;">Tienes una nueva notificación en el sistema Granme:</p>
+                  <table style="width:100%; margin: 16px 0; border-collapse: collapse;">
+                    <tr><td style="font-weight:bold;">Título:</td><td>${notification.title}</td></tr>
+                    <tr><td style="font-weight:bold;">Tipo:</td><td>${notification.type || 'General'}</td></tr>
+                    <tr><td style="font-weight:bold;">Descripción:</td><td>${notification.message}</td></tr>
+                    <tr><td style="font-weight:bold;">Fecha del evento:</td><td>${formattedDate}</td></tr>
+                    <tr><td style="font-weight:bold;">Hora del evento:</td><td>${formattedTime}</td></tr>
+                  </table>
+                  <div style="margin: 24px 0; text-align: center;">
+                    <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/notifications" style="background: #6b7c45; color: #fff; text-decoration: none; padding: 12px 32px; border-radius: 5px; font-weight: bold;">Ver más</a>
+                  </div>
+                  <hr>
+                  <small style="color: #888;">Este mensaje fue generado automáticamente por el sistema Granme.</small>
+                </div>
+              `;
+              await emailService.transporter?.sendMail({
+                from: `"Sistema Granme" <${emailService.fromEmail}>`,
+                to: user.email,
+                subject,
+                html
               });
-
-              // Preparar datos para el email
-              const eventData = {
-                title: original.event_title || notification.title,
-                description: original.event_description,
-                eventDate: formattedDate,
-                eventTime: formattedTime,
-                createdBy: original.created_by_name,
-                sowInfo: original.sow_ear_tag ? {
-                  ear_tag: original.sow_ear_tag,
-                  alias: original.sow_alias,
-                  breed: original.sow_breed,
-                  reproductive_status: original.sow_reproductive_status
-                } : null,
-                message: notification.message
-              };
-
-              // Usar el método especializado del emailService
-              await emailService.sendCalendarEventEmail(
-                user.email,
-                user.first_name || user.email,
-                eventData
-              );
             }
           } catch (emailError) {
             console.error('Error al enviar email de notificación automática:', emailError);

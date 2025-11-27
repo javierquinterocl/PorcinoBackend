@@ -22,8 +22,8 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "node-cron": "^3.0.3",
-    "nodemailer": "^7.0.10",
-    "pg": "^8.11.3"
+    "pg": "^8.11.3",
+    "resend": "^3.5.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

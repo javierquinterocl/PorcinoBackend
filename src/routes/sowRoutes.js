@@ -10,7 +10,6 @@ router.use(authMiddleware);
 // Rutas públicas para usuarios autenticados
 router.get('/', sowController.getAll);
 router.get('/stats', sowController.getStats);
-router.get('/simplified', sowController.getAllSimplified);
 router.get('/ear-tag/:ear_tag', sowController.getByEarTag);
 router.get('/:id/reproductive-status', sowController.getReproductiveStatusById);
 router.get('/:id', sowController.getById);

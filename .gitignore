@@ -1,28 +1,13 @@
 node_modules/
 .env
 *.log
+VALIDACIONES_REPRODUCTIVAS.md
 test-api.http
 codigo-ddl-aborto.sql
 codigo-ddl.sql
+API_DOCUMENTATION.md
 migrations/
 .env.example
 FrontendGranme/
-verify-setup.js
-
-
-# Ignorar archivos de documentación temporal
-CHANGELOG*.md
-CAMBIOS*.md
-RESUMEN*.md
-HORA*.md
-RAILWAY*.md
-CONFIGURACION*.md
-COPIAR*.md
-VALIDACIONES*.md
-*.txt
-!package.json
-!package-lock.json
-
-# Mantener solo estos archivos de documentación
-!README.md
-API_DOCUMENTATION.md
+CAMBIOS_REALIZADOS.md
+INSTRUCCIONES_DESPLIEGUE_RAILWAY.md
